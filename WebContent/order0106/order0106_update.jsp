@@ -48,6 +48,7 @@
 				alert("가격을 입력하세요.");
 				document.o_u_form.addr.focus();
 			}else{
+				document.o_u_form.action="order0106_update_process.jsp"
 				document.o_u_form.submit();
 			}
 		}
@@ -91,6 +92,9 @@
 		String unitprice = "0";
 		int unitsInstock = 0;
 		
+		int UnitsInstock = 0;
+		int Prodcount = 0;
+		
 		try{
 			if(send_id!=null){
 				String sql = "select id,name,to_char(orderdate,'yyyy-mm-dd'),tel,addr,pay,cardno,prodcount,total from order0106 where id=? and name=?";
@@ -116,8 +120,18 @@
 					</script><%
 				}
 			}
-		
-			String sql = "select productId,unitprice,unitsInstock from product0106 where productId=?";
+			String sql = "select unitsInstock,prodcount from product0106,order0106 where productId=? and id=?";
+			pstmt=conn.prepareStatement(sql);
+			pstmt.setString(1, id);
+			pstmt.setString(2, id);
+			rs = pstmt.executeQuery();
+			if(rs.next()){
+				UnitsInstock = rs.getInt(1);
+				Prodcount = rs.getInt(2);	
+			}
+			
+			
+			sql = "select productId,unitprice,unitsInstock from product0106 where productId=?";
 			pstmt=conn.prepareStatement(sql);
 			pstmt.setString(1, id);
 			rs = pstmt.executeQuery();
@@ -125,14 +139,18 @@
 				id = rs.getString(1);
 				unitprice = rs.getString(2); 
 				unitsInstock = rs.getInt(3);
-				System.out.println("prodcount : "+prodcount);
+				
 				System.out.println("unitsInstock : "+unitsInstock);
-				if(id!=null&&prodcount!=null&&(Integer.parseInt(prodcount)+unitsInstock)<0){
+				System.out.println("prodcount : "+prodcount);
+				
+				System.out.println("UnitsInstock : "+UnitsInstock);
+				System.out.println("Prodcount : "+Prodcount);
+				if(id!=null&&prodcount!=null&&(Integer.parseInt(prodcount)+unitsInstock)>UnitsInstock+Prodcount){
 					%><script>
 						alert("재고수보다 많습니다.");
 						inid();
 					</script><%
-					prodcount=Integer.toString(unitsInstock);
+					prodcount="0";
 				}else{
 					%><script>
 						//alert("상품코드가 선택되었습니다.");
@@ -200,8 +218,8 @@
 				<tr>
 					<th>결제방법</th>
 					<td>
-						<input type="radio" name="pay" value="1" checked onclick="cnc1();"> 현금 
-						<input type="radio" name="pay" value="2" onclick="cnc2();"> 카드
+						<input type="radio" name="pay" value="1" onclick="cnc1();" <%if(pay.equals("1")){%> checked <%} %>> 현금 
+						<input type="radio" name="pay" value="2" onclick="cnc2();" <%if(pay.equals("2")){%> checked <%} %>> 카드
 					</td>
 					<th>카드번호</th>
 					<td><input type="text" name="cardno" value="<%=cardno %>" readonly></td>
@@ -224,3 +242,4 @@
 	<%@ include file="/footer.jsp" %>
 </body>
 </html>
+

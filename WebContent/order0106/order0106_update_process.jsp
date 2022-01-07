@@ -18,33 +18,23 @@
 		String cardno = request.getParameter("cardno");
 		String prodcount = request.getParameter("prodcount");
 		String total = request.getParameter("total");
-		int unitsInstock = 0;
+		
+		int UnitsInstock = 0;
+		int Prodcount = 0;
 		int updatecount = 0;
 		
 		try{
-			String sql = "insert into order0106 values(?,?,?,?,?,?,?,?,?)";
+			String sql = "select unitsInstock,prodcount from product0106,order0106 where productId=? and id=?";
 			pstmt=conn.prepareStatement(sql);
 			pstmt.setString(1, id);
-			pstmt.setString(2, name);
-			pstmt.setString(3, orderdate);
-			pstmt.setString(4, addr);
-			pstmt.setString(5, tel);
-			pstmt.setString(6, pay);
-			pstmt.setString(7, cardno);
-			pstmt.setString(8, prodcount);
-			pstmt.setString(9, total);
-			pstmt.executeUpdate();
-			
-			
-			sql = "select unitsInstock from product0106 where productId=?";
-			pstmt=conn.prepareStatement(sql);
-			pstmt.setString(1, id);
+			pstmt.setString(2, id);
 			rs = pstmt.executeQuery();
 			if(rs.next()){
-				unitsInstock = rs.getInt(1);
+				UnitsInstock = rs.getInt(1);
+				Prodcount = rs.getInt(2);	
 			}
 			
-			updatecount = unitsInstock - Integer.parseInt(prodcount);
+			updatecount = Prodcount-Integer.parseInt(prodcount)+UnitsInstock;
 			System.out.println(updatecount);
 			
 			sql = "update product0106 set unitsInstock=? where productId=?";
@@ -52,8 +42,23 @@
 			pstmt.setInt(1, updatecount);
 			pstmt.setString(2, id);
 			pstmt.executeUpdate();
+			
+			
+			sql = "update order0106 set name=?,orderdate=?,addr=?,tel=?,pay=?,cardno=?,prodcount=?,total=? where id=?";
+			pstmt=conn.prepareStatement(sql);
+			pstmt.setString(1, name);
+			pstmt.setString(2, orderdate);
+			pstmt.setString(3, addr);
+			pstmt.setString(4, tel);
+			pstmt.setString(5, pay);
+			pstmt.setString(6, cardno);
+			pstmt.setString(7, prodcount);
+			pstmt.setString(8, total);
+			pstmt.setString(9, id);
+			pstmt.executeUpdate();
+			
 			%><script>
-				alert("주문등록이 완료되었습니다.");
+				alert("주문수정이 완료되었습니다.");
 				location.href = "/HRD_0106/order0106/order0106_select.jsp";
 			</script><%
 			
